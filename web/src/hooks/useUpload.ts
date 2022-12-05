@@ -1,42 +1,35 @@
-import { storage } from "../config/firebase";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-import { toast } from "react-toastify";
+import { firebase } from "../config/firebase";
 import { v4 as uuid } from "uuid";
-import { createUser, updateProfilePicture } from "../api/users";
+import { createUser } from "../api/users";
 import { SignUp } from "../interfaces/users";
 import { useProfileData } from "./useProfileData";
 
 export const useUpload = () => {
   const { updateProfilePicture } = useProfileData();
-  const fileUpload = (file: any) => {};
-  const fireBaseUpload = async (
-    file: any,
-    actionType: "update" | "create",
-    data?: SignUp
-  ) => {
-    const storageRef = ref(storage, `images/${uuid()}`);
-    const uploadImage = uploadBytesResumable(storageRef, file);
-    uploadImage.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      },
-      (e) => {
-        console.log(e);
-        toast(e.message);
-      },
-      async () => {
-        const imageUrl = await getDownloadURL(uploadImage.snapshot.ref);
-        if (actionType === "create" && data) await createUser({ ...data, picture: imageUrl });
-        else {
-          await updateProfilePicture(imageUrl);
-        }
-      }
-    );
+
+  const completeSignUp = async (file: any, data: SignUp) => {
+	const imageId = uuid();
+	await firebase.storage().ref().child(imageId).put(file);
+	await createUser({...data, picture: imageId});
+  }
+
+  const updatePicture = async (file: any, previousPicture?: string) => {
+	const imageId = uuid();
+	if(previousPicture){
+		await firebase.storage().ref().child(previousPicture).delete();
+	}
+    await firebase.storage().ref().child(imageId).put(file);
+	await updateProfilePicture(imageId);
   };
+
+  const getPicture = async (pictureId: string) => {
+	const imageUrl = await firebase.storage().ref().child(pictureId).getDownloadURL();
+	return imageUrl;
+  }
+
   return {
-    fireBaseUpload,
-    fileUpload,
+	completeSignUp,
+    updatePicture,
+	getPicture
   };
 };

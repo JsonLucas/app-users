@@ -5,14 +5,12 @@ import {
   Input,
   FormLabel,
   Button,
-  Progress,
 } from "@chakra-ui/react";
 import { IoIosCamera } from "react-icons/io";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useUpload } from "../../hooks/useUpload";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
-import { updateProfilePicture } from "../../api/users";
 import { IUser } from "../../interfaces/users";
 
 interface props {
@@ -20,18 +18,18 @@ interface props {
 }
 
 export function CardUserData({ profile }: props) {
-  const { fireBaseUpload } = useUpload();
+  const { updatePicture, getPicture } = useUpload();
   const [alterPicture, setAlterPicture] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>();
   const [imageFile, setImageFile] = useState<any>();
+  const [picture, setPicture] = useState<string>();
   const onChange = useCallback(async ({ target }: any) => {
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
     const file = target.files[0];
     if (allowedTypes.find((item) => { return item === file.type; })) {
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewImage(fileUrl);
-      //setImageFile(formData);
-      setImageFile(file);
+	  const fileUrl = URL.createObjectURL(file);
+	  setPreviewImage(fileUrl);
+	  setImageFile(file);
     } else {
       toast("file format not supported");
     }
@@ -39,8 +37,7 @@ export function CardUserData({ profile }: props) {
 
   const upload = async () => {
     try {
-    //   await updateProfilePicture(imageFile);
-      await fireBaseUpload(imageFile, 'update');
+      await updatePicture(imageFile, profile.picture);
       toast("Imagem de perfil alterada com sucesso!");
     } catch (e: any) {
       console.log(e);
@@ -49,6 +46,15 @@ export function CardUserData({ profile }: props) {
 	setPreviewImage(undefined);
 	setImageFile(undefined);
   };
+
+  useEffect(() => {
+	(async () => {
+		if(profile.picture){
+			const picture = await getPicture(profile.picture);
+			setPicture(picture);
+		}
+	})();
+  }, [profile.picture]);
 
   return (
     <Box w="95%" m="25px auto">
@@ -64,7 +70,7 @@ export function CardUserData({ profile }: props) {
           onMouseLeave={() => setAlterPicture(false)}
         >
           <Image
-            src={previewImage ? previewImage : profile.picture}
+            src={previewImage ? previewImage : picture}
             w="100%"
             h="100%"
             alt="imagem não carregada"

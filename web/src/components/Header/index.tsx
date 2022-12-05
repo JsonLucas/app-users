@@ -5,6 +5,7 @@ import { IoIosHome } from "react-icons/io";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { AuthContext } from "../../contexts/auth";
 import { IUser } from "../../interfaces/users";
+import { useUpload } from "../../hooks/useUpload";
 
 interface props{
 	profile: IUser
@@ -12,14 +13,24 @@ interface props{
 
 export function Header({profile}: props) {
   const [hidden, setHidden] = useState<boolean>(true);
+  const { getPicture } = useUpload();
   const { endSession } = useLocalStorage();
   const { setLogged } = useContext(AuthContext);
+  const [picture, setPicture] = useState<string>();
   const navigate = useNavigate();
   const logout = () => {
     endSession();
     navigate("/");
 	setLogged(false);
   };
+  useEffect(() => {
+	(async () => {
+		if(profile.picture){
+			const picture = await getPicture(profile.picture);
+			setPicture(picture);
+		}
+	})();
+  }, [profile.picture]);
   return (
     <Box
       p="10px"
@@ -51,7 +62,7 @@ export function Header({profile}: props) {
 		  cursor='pointer'
           onClick={() => setHidden(!hidden)}
         >
-          <Image src={profile.picture} w="100%" h="100%" borderRadius="50%" />
+          <Image src={picture} w="100%" h="100%" borderRadius="50%" />
           <Box
             p="5px"
             w="100px"

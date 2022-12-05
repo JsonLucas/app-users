@@ -10,7 +10,7 @@ export const useProfileData = () => {
   });
 
   const { mutateAsync } = useMutation(
-    async (picture: string | FormData) => {
+    async (picture: string) => {
       await changeProfilePicture(picture);
     },
     {

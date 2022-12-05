@@ -14,7 +14,7 @@ export function CardSignUp() {
   const [loading, setLoading] = useState<boolean>(false);
   const [file, setFile] = useState<any>();
   const [previewImage, setPreviewImage] = useState<string>();
-  const { fireBaseUpload } = useUpload();
+  const { completeSignUp } = useUpload();
   const onDrop = useCallback(async (file: any) => {
     const imageFile = file[0];
     if (imageFile) {
@@ -31,13 +31,10 @@ export function CardSignUp() {
   });
   const navigate = useNavigate();
   const signUp = async (data: any) => {
-    const completeData = { ...data, picture: "" };
     setLoading(true);
     try {
-      if (file) await fireBaseUpload(file, "create", completeData);
-      else {
-        const response = await createUser(completeData);
-      }
+      if (file) await completeSignUp(file, data);
+      else await createUser(data);
       toast("Cadastro efetuado com sucesso!");
       navigate("/");
     } catch (e: any) {

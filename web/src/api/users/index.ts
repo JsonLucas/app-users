@@ -15,6 +15,6 @@ export const getProfileData = async () => {
 	return data;
 }
 
-export const updateProfilePicture = async (picture: string | FormData) => {
+export const updateProfilePicture = async (picture: string) => {
 	return await api.patch('/profile/picture', { picture });
 }
