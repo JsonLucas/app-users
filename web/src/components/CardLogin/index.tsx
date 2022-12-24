@@ -5,9 +5,9 @@ import { Field } from "../Field";
 import { useForm } from "react-hook-form";
 import { signInUser } from "../../api/users";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { AuthContext } from "../../contexts/auth";
+import { useToast } from "../../hooks/useToast";
 
 export function CardLogin() {
   const [loading, setLoading] = useState<boolean>(false);
@@ -15,17 +15,18 @@ export function CardLogin() {
   const { setToken } = useLocalStorage();
   const { setLogged } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { successToast, errorToast } = useToast();
   const login = async (data: any) => {
     setLoading(true);
     try {
       const token = await signInUser(data);
 	  setLogged(true);
-      toast("login efetuado com sucesso!");
+      successToast("login efetuado com sucesso!");
 	  setToken(token);
       navigate("/home");
     } catch (e: any) {
 	  console.log(e);
-      toast(e.response.data);
+	  errorToast(e);
     }
     setLoading(false);
   };

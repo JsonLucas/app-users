@@ -7,21 +7,23 @@ import { createUser } from "../../api/users";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDropzone } from "react-dropzone";
-import { useUpload } from "../../hooks/useUpload";
+import { useStorage } from "../../hooks/useStorage";
+import { useToast } from "../../hooks/useToast";
 
 export function CardSignUp() {
   const { register, handleSubmit } = useForm();
   const [loading, setLoading] = useState<boolean>(false);
   const [file, setFile] = useState<any>();
   const [previewImage, setPreviewImage] = useState<string>();
-  const { completeSignUp } = useUpload();
+  const { completeSignUp } = useStorage();
+  const { successToast, errorToast } = useToast();
   const onDrop = useCallback(async (file: any) => {
     const imageFile = file[0];
     if (imageFile) {
       const imagePreviewUrl = URL.createObjectURL(imageFile);
       setFile(imageFile);
       setPreviewImage(imagePreviewUrl);
-    } else toast("Formato de arquivo não suportado.");
+    } else errorToast({ message: "Formato de arquivo não suportado." });
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -35,12 +37,10 @@ export function CardSignUp() {
     try {
       if (file) await completeSignUp(file, data);
       else await createUser(data);
-      toast("Cadastro efetuado com sucesso!");
+      successToast("Cadastro efetuado com sucesso!");
       navigate("/");
     } catch (e: any) {
-      if (e.response) {
-        toast(e.response.data);
-      }
+	  errorToast(e);
       console.log(e);
     }
     setLoading(false);

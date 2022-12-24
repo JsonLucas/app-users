@@ -8,5 +8,6 @@ export interface IUser{
 	updatedAt?: Date
 }
 
+export type User = IUser & { previousPictureId: string };
 export type SignUp = Pick<IUser, 'name' | 'email' | 'password' | 'picture'> & { confirmPassword: string };
 export type Login = Pick<IUser, 'email' | 'password'>;

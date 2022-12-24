@@ -4,7 +4,7 @@ import { createUser } from "../api/users";
 import { SignUp } from "../interfaces/users";
 import { useProfileData } from "./useProfileData";
 
-export const useUpload = () => {
+export const useStorage = () => {
   const { updateProfilePicture } = useProfileData();
 
   const completeSignUp = async (file: any, data: SignUp) => {

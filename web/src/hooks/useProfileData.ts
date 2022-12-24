@@ -7,7 +7,7 @@ export const useProfileData = () => {
   const { data, isLoading, error } = useQuery(["profile"], async () => {
     const data = await getProfileData();
     return data;
-  });
+  }, { staleTime: 60 });
 
   const { mutateAsync } = useMutation(
     async (picture: string) => {

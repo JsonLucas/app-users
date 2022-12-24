@@ -1,64 +1,55 @@
-import {
-  Box,
-  Text,
-  Image,
-  Input,
-  FormLabel,
-  Button,
-} from "@chakra-ui/react";
+import { Box, Text, Image, Input, FormLabel, Button } from "@chakra-ui/react";
 import { IoIosCamera } from "react-icons/io";
 import { useState, useCallback, useEffect } from "react";
-import { useUpload } from "../../hooks/useUpload";
-import { toast } from "react-toastify";
+import { useStorage } from "../../hooks/useStorage";
+import { IUser, User } from "../../interfaces/users";
+import { useToast } from "../../hooks/useToast";
 import dayjs from "dayjs";
-import { IUser } from "../../interfaces/users";
+import { ThreeDots } from "react-loader-spinner";
 
 interface props {
-  profile: IUser;
+  profile: User;
 }
 
 export function CardUserData({ profile }: props) {
-  const { updatePicture, getPicture } = useUpload();
+  const { updatePicture, getPicture } = useStorage();
   const [alterPicture, setAlterPicture] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>();
   const [imageFile, setImageFile] = useState<any>();
-  const [picture, setPicture] = useState<string>();
+  const { successToast, errorToast } = useToast();
   const onChange = useCallback(async ({ target }: any) => {
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
     const file = target.files[0];
-    if (allowedTypes.find((item) => { return item === file.type; })) {
-	  const fileUrl = URL.createObjectURL(file);
-	  setPreviewImage(fileUrl);
-	  setImageFile(file);
+    if (
+      allowedTypes.find((item) => {
+        return item === file.type;
+      })
+    ) {
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewImage(fileUrl);
+      setImageFile(file);
     } else {
-      toast("file format not supported");
+      errorToast({ message: "file format not supported" });
     }
   }, []);
 
   const upload = async () => {
+    setLoading(true);
     try {
-      await updatePicture(imageFile, profile.picture);
-      toast("Imagem de perfil alterada com sucesso!");
+      await updatePicture(imageFile, profile.previousPictureId);
+      successToast("Imagem de perfil alterada com sucesso!");
     } catch (e: any) {
       console.log(e);
-      toast(e.response.data);
+      errorToast(e);
     }
-	setPreviewImage(undefined);
-	setImageFile(undefined);
+    setPreviewImage(undefined);
+    setImageFile(undefined);
+    setLoading(false);
   };
-
-  useEffect(() => {
-	(async () => {
-		if(profile.picture){
-			const picture = await getPicture(profile.picture);
-			setPicture(picture);
-		}
-	})();
-  }, [profile.picture]);
-
   return (
     <Box w="95%" m="25px auto">
-      <Box display="flex" flexDir='column'>
+      <Box display="flex" flexDir="column">
         <Box
           bgColor="grey"
           w="200px"
@@ -70,7 +61,7 @@ export function CardUserData({ profile }: props) {
           onMouseLeave={() => setAlterPicture(false)}
         >
           <Image
-            src={previewImage ? previewImage : picture}
+            src={previewImage ? previewImage : profile.picture}
             w="100%"
             h="100%"
             alt="imagem não carregada"
@@ -98,7 +89,14 @@ export function CardUserData({ profile }: props) {
           </FormLabel>
         </Box>
         {previewImage && (
-          <Box m="10px">
+          <Box
+            m="10px"
+            display="flex"
+            flexDir="column"
+            maxW="170px"
+            h="75px"
+            justifyContent="space-between"
+          >
             <Button
               p="8px"
               border="none"
@@ -108,7 +106,23 @@ export function CardUserData({ profile }: props) {
               color="white"
               onClick={upload}
             >
-              Concluir upload
+              {loading && (
+                <Box w="35%" m="auto">
+                  <ThreeDots color="white" width="100%" height="55%" />
+                </Box>
+              )}
+              {!loading && <>Concluir upload</>}
+            </Button>
+            <Button
+              p="8px"
+              border="none"
+              bgColor="darkred"
+              borderRadius="5px"
+              cursor="pointer"
+              color="white"
+              onClick={() => setPreviewImage(undefined)}
+            >
+              Limpar
             </Button>
           </Box>
         )}
