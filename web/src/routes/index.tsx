@@ -6,18 +6,14 @@ import { Profile } from "../pages/Profile";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { NotFound } from "../pages/NotFound";
 import { AuthContext } from "../contexts/auth";
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { getToken } from "@chakra-ui/react";
 
 export function AppRoutes() {
   const { getToken } = useLocalStorage();
-  const [logged, setLogged] = useState(false);
-  useEffect(() => {
-	if(getToken()){
-		setLogged(true);
-	}
-  }, [logged]);
+  const [logged, setLogged] = useState(getToken() ? true : false);
   return (
-    <AuthContext.Provider value={{logged, setLogged}}>
+    <AuthContext.Provider value={{ logged, setLogged }}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login />} />

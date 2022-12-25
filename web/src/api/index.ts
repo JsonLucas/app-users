@@ -5,6 +5,7 @@ const { getToken } = useLocalStorage();
 export const api = axios.create({ baseURL: 'http://localhost:5000' });
 
 api.interceptors.request.use(async (request) => {
-	request.headers = { authorization: getToken() };
+	const token = getToken();
+	request.headers = { authorization: `Bearer ${token}` };
 	return request;
 });

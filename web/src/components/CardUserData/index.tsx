@@ -2,17 +2,18 @@ import { Box, Text, Image, Input, FormLabel, Button } from "@chakra-ui/react";
 import { IoIosCamera } from "react-icons/io";
 import { useState, useCallback, useEffect } from "react";
 import { useStorage } from "../../hooks/useStorage";
-import { IUser, User } from "../../interfaces/users";
+import { IUser } from "../../interfaces/users";
 import { useToast } from "../../hooks/useToast";
-import dayjs from "dayjs";
 import { ThreeDots } from "react-loader-spinner";
+import dayjs from "dayjs";
 
 interface props {
-  profile: User;
+  profile: IUser;
 }
 
 export function CardUserData({ profile }: props) {
   const { updatePicture, getPicture } = useStorage();
+  const [picture, setPicture] = useState<string>();
   const [alterPicture, setAlterPicture] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>();
@@ -37,7 +38,7 @@ export function CardUserData({ profile }: props) {
   const upload = async () => {
     setLoading(true);
     try {
-      await updatePicture(imageFile, profile.previousPictureId);
+      await updatePicture(imageFile, profile.picture);
       successToast("Imagem de perfil alterada com sucesso!");
     } catch (e: any) {
       console.log(e);
@@ -47,6 +48,15 @@ export function CardUserData({ profile }: props) {
     setImageFile(undefined);
     setLoading(false);
   };
+
+  useEffect(() => {
+    (async () => {
+      if (profile.picture) {
+        const picture = await getPicture(profile.picture);
+        setPicture(picture);
+      }
+    })();
+  }, [profile.picture]);
   return (
     <Box w="95%" m="25px auto">
       <Box display="flex" flexDir="column">
@@ -61,7 +71,7 @@ export function CardUserData({ profile }: props) {
           onMouseLeave={() => setAlterPicture(false)}
         >
           <Image
-            src={previewImage ? previewImage : profile.picture}
+            src={previewImage ? previewImage : picture}
             w="100%"
             h="100%"
             alt="imagem não carregada"

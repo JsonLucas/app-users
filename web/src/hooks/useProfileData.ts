@@ -14,9 +14,7 @@ export const useProfileData = () => {
       await changeProfilePicture(picture);
     },
     {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["profile"]);
-      },
+      onSuccess: () => queryClient.invalidateQueries(["profile"]),
     }
   );
 

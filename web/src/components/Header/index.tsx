@@ -4,15 +4,16 @@ import { useNavigate } from "react-router-dom";
 import { IoIosHome } from "react-icons/io";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { AuthContext } from "../../contexts/auth";
-import { IUser, User } from "../../interfaces/users";
+import { IUser } from "../../interfaces/users";
 import { useStorage } from "../../hooks/useStorage";
 
-interface props{
-	profile: User
+interface props {
+  profile: IUser;
 }
 
-export function Header({profile}: props) {
+export function Header({ profile }: props) {
   const [hidden, setHidden] = useState<boolean>(true);
+  const [picture, setPicture] = useState<string>();
   const { getPicture } = useStorage();
   const { endSession } = useLocalStorage();
   const { setLogged } = useContext(AuthContext);
@@ -20,8 +21,16 @@ export function Header({profile}: props) {
   const logout = () => {
     endSession();
     navigate("/");
-	setLogged(false);
+    setLogged(false);
   };
+  useEffect(() => {
+    (async () => {
+      if (profile.picture) {
+        const picture = await getPicture(profile.picture);
+        setPicture(picture);
+      }
+    })();
+  }, [profile.picture]);
   return (
     <Box
       p="10px"
@@ -50,10 +59,10 @@ export function Header({profile}: props) {
           top="10px"
           right="40px"
           borderRadius="50%"
-		  cursor='pointer'
+          cursor="pointer"
           onClick={() => setHidden(!hidden)}
         >
-          <Image src={profile.picture} w="100%" h="100%" borderRadius="50%" />
+          <Image src={picture} w="100%" h="100%" borderRadius="50%" />
           <Box
             p="5px"
             w="100px"

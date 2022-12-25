@@ -6,14 +6,13 @@ export const useLocalStorage = () => {
 	const getToken = () => {
 		const jsonToken = localStorage.getItem('app_users-token');
 		if(jsonToken){
-			return `Bearer ${jsonToken}`;
+			return jsonToken;
 		}
 		return null;
 	}
 
 	const endSession = () => {
 		localStorage.removeItem('app_users-token');
-		localStorage.removeItem('app_users-info');
 	}
 
 	return { setToken, getToken, endSession }
